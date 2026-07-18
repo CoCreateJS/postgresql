@@ -1,11 +1,29 @@
-const { Pool } = require("pg");
-const {
+/********************************************************************************
+ * Copyright (C) 2026 CoCreate and Contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ ********************************************************************************/
+
+import pg from "pg";
+const { Pool } = pg;
+import {
 	dotNotationToObject,
 	queryData,
 	searchData,
 	sortData,
 	isValidDate
-} = require("@cocreate/utils");
+} from "@cocreate/utils";
 
 const organizations = {};
 
@@ -14,8 +32,9 @@ const organizations = {};
  */
 async function dbClient(data) {
 	if (data.storageUrl) {
-		if (!organizations[data.organization_id])
+		if (!organizations[data.organization_id]) {
 			organizations[data.organization_id] = {};
+		}
 		try {
 			if (!organizations[data.organization_id][data.storageUrl]) {
 				// Establish PostgreSQL Pool with optimized connection properties
@@ -29,7 +48,7 @@ async function dbClient(data) {
 			return organizations[data.organization_id][data.storageUrl];
 		} catch (error) {
 			console.error(
-				`${data.organization_id}: storageName ${data.storageName} failed to connect to PostgreSQL`
+				`${data.organization_id}: storageName ${data.storageName || "postgresql"} failed to connect to PostgreSQL`
 			);
 			errorHandler(data, error);
 			return { status: false };
@@ -41,9 +60,40 @@ async function dbClient(data) {
 }
 
 /**
+ * Global Event Listener: orgDeleted
+ * Gracefully terminates active PostgreSQL connection pools.
+ */
+process.on("orgDeleted", (organization_id) => {
+	const orgPools = organizations[organization_id];
+	if (orgPools) {
+		console.log(`[PostgreSQL Utilities] Cleanup Scheduled: Initiating 5-second grace period for Org: ${organization_id}`);
+		setTimeout(async () => {
+			const currentPools = organizations[organization_id];
+			if (!currentPools) return;
+
+			console.log(`[PostgreSQL Utilities] Cleanup Executing: Closing connection pools for Org: ${organization_id}`);
+			const poolList = Object.values(currentPools);
+
+			for (const pool of poolList) {
+				try {
+					if (pool && typeof pool.end === "function") {
+						await pool.end();
+					}
+				} catch (err) {
+					console.error(`[PostgreSQL Utilities] Error closing connection pool for Org ${organization_id}:`, err);
+				}
+			}
+
+			delete organizations[organization_id];
+			console.log(`[PostgreSQL Utilities] Memory Cleared: Registry freed for Org: ${organization_id}`);
+		}, 5000);
+	}
+});
+
+/**
  * Universal router matching the exact entry-point signature of the MongoDB wrapper.
  */
-function send(data) {
+export function send(data) {
 	let [type, method] = data.method.split(".");
 	if (type === "database") return database(method, data);
 	if (type === "array") return array(method, data);
@@ -61,7 +111,7 @@ function database(method, data) {
 
 			try {
 				const pool = await dbClient(data);
-				if (!pool || pool.status === false) return data;
+				if (!pool || pool.status === false) return resolve(data);
 
 				if (method === "read") {
 					const sql = "SELECT datname FROM pg_database WHERE datistemplate = false;";
@@ -87,12 +137,12 @@ function database(method, data) {
 							if (isFilter)
 								databaseArray.push({
 									database: dbObj,
-									storage: data.storageName
+									storage: data.storageName || "postgresql"
 								});
 						} else {
 							databaseArray.push({
 								database: dbObj,
-								storage: data.storageName
+								storage: data.storageName || "postgresql"
 							});
 						}
 					}
@@ -122,9 +172,6 @@ function database(method, data) {
 				console.log(method, "error", error);
 				resolve(data);
 			}
-		},
-		(error) => {
-			errorHandler(data, error);
 		}
 	);
 }
@@ -140,7 +187,7 @@ function array(method, data) {
 
 			try {
 				const pool = await dbClient(data);
-				if (!pool || pool.status === false) return data;
+				if (!pool || pool.status === false) return resolve(data);
 
 				if (data.request) data.array = data.request;
 
@@ -178,13 +225,13 @@ function array(method, data) {
 									arrayArray.push({
 										name: row.table_name,
 										database,
-										storage: data.storageName
+										storage: data.storageName || "postgresql"
 									});
 							} else {
 								arrayArray.push({
 									name: row.table_name,
 									database,
-									storage: data.storageName
+									storage: data.storageName || "postgresql"
 								});
 							}
 						}
@@ -222,7 +269,7 @@ function array(method, data) {
 								arrayArray.push({
 									name: array,
 									database,
-									storage: data.storageName
+									storage: data.storageName || "postgresql"
 								});
 
 								arraysLength -= 1;
@@ -247,7 +294,7 @@ function array(method, data) {
 										name: newName,
 										oldName: oldName,
 										database,
-										storage: data.storageName
+										storage: data.storageName || "postgresql"
 									});
 
 									arraysLength -= 1;
@@ -271,7 +318,7 @@ function array(method, data) {
 									arrayArray.push({
 										name: array,
 										database,
-										storage: data.storageName
+										storage: data.storageName || "postgresql"
 									});
 
 									arraysLength -= 1;
@@ -290,9 +337,6 @@ function array(method, data) {
 				console.log(method, "error", error);
 				resolve(data);
 			}
-		},
-		(error) => {
-			errorHandler(data, error);
 		}
 	);
 }
@@ -305,7 +349,7 @@ function object(method, data) {
 		async (resolve, reject) => {
 			try {
 				const pool = await dbClient(data);
-				if (!pool || pool.status === false) return data;
+				if (!pool || pool.status === false) return resolve(data);
 
 				let type = "object";
 				let documents = [];
@@ -322,7 +366,7 @@ function object(method, data) {
 
 					for (let array of arrays) {
 						const reference = {
-							$storage: data.storageName,
+							$storage: data.storageName || "postgresql",
 							$database: database,
 							$array: array
 						};
@@ -347,7 +391,7 @@ function object(method, data) {
 							if (!Array.isArray($database)) $database = [data[type][i].$database];
 							if (!Array.isArray($array)) $array = [data[type][i].$array];
 
-							if (!$storage.includes(data.storageName)) $storage.push(data.storageName);
+							if (!$storage.includes(data.storageName || "postgresql")) $storage.push(data.storageName || "postgresql");
 							if (!$database.includes(database)) $database.push(database);
 							if (!$array.includes(array)) $array.push(array);
 
@@ -439,7 +483,6 @@ function object(method, data) {
 								if (isFilter) {
 									for (let row of result.rows) {
 										const parsedRow = parseSqlRow(row);
-										// Perform dynamic text searching if requested
 										if (data.$filter && data.$filter.search) {
 											let isMatch = searchData(parsedRow, data.$filter.search);
 											if (!isMatch) continue;
@@ -452,18 +495,15 @@ function object(method, data) {
 								} else if (result.rows.length > 0) {
 									let dbRecord = parseSqlRow(result.rows[0]);
 									
-									// Offline synchronization logic
 									if ($storage.length && data[type][i].modified && data[type][i].modified.on) {
 										let clientTime = new Date(data[type][i].modified.on);
 										let dbTime = new Date(dbRecord.modified ? dbRecord.modified.on : 0);
 										
 										if (clientTime > dbTime) {
-											// Client modified newer: perform a full synchronization merge and commit write
 											const updatedRecord = { ...dbRecord, ...data[type][i] };
 											const savedRecord = await executeUpdateTransaction(pool, array, data[type][i]._id, updatedRecord, data);
 											data[type][i] = { ...savedRecord, $storage, $database, $array };
 										} else {
-											// DB has newer or identical stamp: resolve with database state
 											data[type][i] = { ...data[type][i], ...dbRecord, $storage, $database, $array };
 										}
 									} else {
@@ -489,7 +529,6 @@ function object(method, data) {
 										data[type][i] = { ...updatedDoc, $storage, $database, $array };
 									}
 								} else if (isFilter) {
-									// Read target row IDs first for consistent processing
 									const selectSql = `SELECT _id FROM "${array}" ${sqlWhere}`;
 									process.emit("usage", {
 										type: "egress",
@@ -550,9 +589,6 @@ function object(method, data) {
 				console.log(method, "error", error);
 				resolve(data);
 			}
-		},
-		(error) => {
-			errorHandler(data, error);
 		}
 	);
 }
@@ -565,7 +601,6 @@ async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, 
 	try {
 		await client.query("BEGIN;");
 		
-		// Row lock the targeted document preventing race conditions
 		const selectSql = `SELECT * FROM "${arrayName}" WHERE _id = $1 AND organization_id = $2 FOR UPDATE;`;
 		const selectParams = [docId, requestData.organization_id];
 		
@@ -581,16 +616,13 @@ async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, 
 			}
 		}
 
-		// Compute updated structural fields and payload blocks
 		const modified = {
 			on: new Date(requestData.timeStamp),
 			by: requestData.user_id || requestData.clientId
 		};
 
-		// Run deep JavaScript nested update mutator reproducing MongoDB operator behavior
 		const updatedPayload = applyMongoUpdate(currentRecord, rawUpdateInput);
 		
-		// Clean out system structures before committing payload to SQL database JSONB field
 		const savePayload = { ...updatedPayload };
 		delete savePayload._id;
 		delete savePayload.organization_id;
@@ -637,15 +669,13 @@ async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, 
 function applyMongoUpdate(record, updatePayload) {
 	let target = { ...record };
 
-	// Process set operators
 	Object.keys(updatePayload).forEach((rawKey) => {
-		if (rawKey.startsWith("$")) return; // Skip operators for raw fields processing
+		if (rawKey.startsWith("$")) return;
 
 		let cleanKey = rawKey.replace(/\[(\d+)\]/g, ".$1");
 		setNestedValue(target, cleanKey, updatePayload[rawKey]);
 	});
 
-	// Process Mongo Operators: $set, $unset, $push, $pull, $addToSet, $inc
 	if (updatePayload.$set) {
 		Object.keys(updatePayload.$set).forEach((key) => {
 			let cleanKey = key.replace(/\[(\d+)\]/g, ".$1");
@@ -736,7 +766,6 @@ function compileFilterToSQL(filter, organizationId) {
 		const parseConditionGroup = (queryObj, isOrJoin = false) => {
 			let localClauses = [];
 
-			// Special Handling for nested boolean operators ($or, $and)
 			if (queryObj.$or && Array.isArray(queryObj.$or)) {
 				let orClauses = queryObj.$or.map(subQuery => parseConditionGroup(subQuery)).filter(c => c.length);
 				if (orClauses.length) {
@@ -750,7 +779,6 @@ function compileFilterToSQL(filter, organizationId) {
 				}
 			}
 
-			// Process fields recursively supporting dot path targets
 			for (let key in queryObj) {
 				if (["$or", "$and"].includes(key)) continue;
 
@@ -890,4 +918,4 @@ function errorHandler(data, error, database, array) {
 	}
 }
 
-module.exports = { send };
+export default { send };
