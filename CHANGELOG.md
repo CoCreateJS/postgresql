@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/CoCreate-app/CoCreate-postgresql/compare/v1.0.0...v1.1.0) (2026-07-18)
+
+
+### Features
+
+* update package.json description and keywords; migrate to ES modules in index.js ([b91abfa](https://github.com/CoCreate-app/CoCreate-postgresql/commit/b91abfaaf64923dda537fa541e43c1fa8ea6e377))
+
 # 1.0.0 (2026-07-18)
 
 
