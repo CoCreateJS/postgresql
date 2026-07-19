@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/CoCreate-app/CoCreate-postgresql/compare/v1.2.0...v1.2.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* set default branch to main ([56f710d](https://github.com/CoCreate-app/CoCreate-postgresql/commit/56f710d37ffdd444683719621668912b1740bc92))
+
 # [1.2.0](https://github.com/CoCreate-app/CoCreate-postgresql/compare/v1.1.0...v1.2.0) (2026-07-19)
 
 
