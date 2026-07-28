@@ -61,13 +61,13 @@ function array(method, data) {
 									arrayArray.push({
 										name: row.table_name,
 										database,
-										storage: data.storageName || "postgresql"
+										storage: data.storageConfig?.name
 									});
 							} else {
 								arrayArray.push({
 									name: row.table_name,
 									database,
-									storage: data.storageName || "postgresql"
+									storage: data.storageConfig?.name
 								});
 							}
 						}
@@ -105,7 +105,7 @@ function array(method, data) {
 								arrayArray.push({
 									name: array,
 									database,
-									storage: data.storageName || "postgresql"
+									storage: data.storageConfig?.name
 								});
 
 								arraysLength -= 1;
@@ -130,7 +130,7 @@ function array(method, data) {
 										name: newName,
 										oldName: oldName,
 										database,
-										storage: data.storageName || "postgresql"
+										storage: data.storageConfig?.name
 									});
 
 									arraysLength -= 1;
@@ -154,7 +154,7 @@ function array(method, data) {
 									arrayArray.push({
 										name: array,
 										database,
-										storage: data.storageName || "postgresql"
+										storage: data.storageConfig?.name
 									});
 
 									arraysLength -= 1;

@@ -28,27 +28,29 @@ import {
 const organizations = {};
 
 /**
- * Manages dynamically cached connection pools based on storageUrl and organization_id.
+ * Manages dynamically cached connection pools based on data.storageConfig.url and data.organization_id.
  */
 async function dbClient(data) {
-	if (data.storageUrl) {
+	const storageUrl = data.storageConfig?.url
+
+	if (storageUrl) {
 		if (!organizations[data.organization_id]) {
 			organizations[data.organization_id] = {};
 		}
 		try {
-			if (!organizations[data.organization_id][data.storageUrl]) {
+			if (!organizations[data.organization_id][storageUrl]) {
 				// Establish PostgreSQL Pool with optimized connection properties
-				organizations[data.organization_id][data.storageUrl] = new Pool({
-					connectionString: data.storageUrl,
+				organizations[data.organization_id][storageUrl] = new Pool({
+					connectionString: storageUrl,
 					max: 10,
 					idleTimeoutMillis: 30000,
 					connectionTimeoutMillis: 5000
 				});
 			}
-			return organizations[data.organization_id][data.storageUrl];
+			return organizations[data.organization_id][storageUrl];
 		} catch (error) {
 			console.error(
-				`${data.organization_id}: storageName ${data.storageName || "postgresql"} failed to connect to PostgreSQL`
+				`${data.organization_id}: storageName ${data.storageConfig?.name} failed to connect to PostgreSQL`
 			);
 			errorHandler(data, error);
 			return { status: false };

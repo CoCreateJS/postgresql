@@ -49,12 +49,12 @@ function database(method, data) {
 							if (isFilter)
 								databaseArray.push({
 									database: dbObj,
-									storage: data.storageName || "postgresql"
+									storage: data.storageConfig?.name
 								});
 						} else {
 							databaseArray.push({
 								database: dbObj,
-								storage: data.storageName || "postgresql"
+								storage: data.storageConfig?.name
 							});
 						}
 					}

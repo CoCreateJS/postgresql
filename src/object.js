@@ -37,7 +37,7 @@ function object(method, data) {
 
 					for (let array of arrays) {
 						const reference = {
-							$storage: data.storageName || "postgresql",
+							$storage: data.storageConfig?.name,
 							$database: database,
 							$array: array
 						};
@@ -62,7 +62,7 @@ function object(method, data) {
 							if (!Array.isArray($database)) $database = [data[type][i].$database];
 							if (!Array.isArray($array)) $array = [data[type][i].$array];
 
-							if (!$storage.includes(data.storageName || "postgresql")) $storage.push(data.storageName || "postgresql");
+							if (!$storage.includes(data.storageConfig?.name)) $storage.push(data.storageConfig?.name);
 							if (!$database.includes(database)) $database.push(database);
 							if (!$array.includes(array)) $array.push(array);
 
