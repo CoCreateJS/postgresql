@@ -48,7 +48,7 @@
     "@cocreate/webpack": "^1.7.0"
   },
   "dependencies": {
-    "@cocreate/utils": "^1.46.0",
+    "@cocreate/utils": "^1.48.0",
     "pg": "^8.22.0"
   }
 }
