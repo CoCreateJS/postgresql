@@ -41,8 +41,8 @@
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./distribution": "./dist/mongodb.js",
-    "./installer": "./installer/mongodb.installer.js"
+    "./dist": "./dist/postgresql.js",
+    "./installer": "./installer/postgresql.installer.js"
   },
   "devDependencies": {
     "@cocreate/webpack": "^1.6.2"
