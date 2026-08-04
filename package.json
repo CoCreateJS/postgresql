@@ -1,6 +1,6 @@
 {
   "name": "@cocreate/postgresql",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Lightweight PostgreSQL CRUD wrapper and multi-tenant state routing client for the CoCreate ecosystem.",
   "keywords": [
     "postgresql",
