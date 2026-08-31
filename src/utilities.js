@@ -254,7 +254,7 @@ function applyMongoUpdate(record, updatePayload) {
 }
 
 /**
- * Dynamic parser formatting Mongo $filter models into SQL statements containing parameter references.
+ * Dynamic parser formatting Mongo filter models into SQL statements containing parameter references.
  */
 function compileFilterToSQL(filter, organizationId) {
 	let clauses = ["organization_id = $1"];

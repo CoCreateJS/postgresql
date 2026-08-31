@@ -55,8 +55,8 @@ function array(method, data) {
 
 						for (let row of res.rows) {
 							const tableObj = { name: row.table_name };
-							if (data.$filter && data.$filter.query) {
-								let isFilter = queryData(tableObj, data.$filter.query);
+							if (data.filter && data.filter.query) {
+								let isFilter = queryData(tableObj, data.filter.query);
 								if (isFilter)
 									arrayArray.push({
 										name: row.table_name,

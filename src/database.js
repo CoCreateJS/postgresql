@@ -44,8 +44,8 @@ function database(method, data) {
 
 					for (let row of res.rows) {
 						const dbObj = { name: row.datname };
-						if (data.$filter && data.$filter.query) {
-							let isFilter = queryData(dbObj, data.$filter.query);
+						if (data.filter && data.filter.query) {
+							let isFilter = queryData(dbObj, data.filter.query);
 							if (isFilter)
 								databaseArray.push({
 									database: dbObj,

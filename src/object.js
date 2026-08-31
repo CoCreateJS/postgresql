@@ -48,7 +48,7 @@ function object(method, data) {
 						else if (!Array.isArray(data[type]))
 							data[type] = [data[type]];
 
-						let isFilter = !!data.$filter;
+						let isFilter = !!data.filter;
 						if ((isFilter && !data[type].length) || data.isFilter) {
 							data[type].splice(0, 0, { isFilter: "isEmptyObjectFilter" });
 						}
@@ -70,7 +70,7 @@ function object(method, data) {
 							delete data[type][i].$database;
 							delete data[type][i].$array;
 
-							let queryFilter = isFilter ? data.$filter : (data[type][i].$filter || null);
+							let queryFilter = isFilter ? data.filter : (data[type][i].filter || null);
 							let { sqlWhere, params } = compileFilterToSQL(queryFilter, data.organization_id);
 
 							if (method === "create") {
@@ -116,8 +116,8 @@ function object(method, data) {
 							else if (method === "read") {
 								let sql = `SELECT * FROM "${array}" ${sqlWhere}`;
 								
-								if (data.$filter && data.$filter.sort) {
-									const sortClauses = data.$filter.sort.map(s => {
+								if (data.filter && data.filter.sort) {
+									const sortClauses = data.filter.sort.map(s => {
 										let dir = s.direction === -1 || s.direction === 'desc' ? 'DESC' : 'ASC';
 										if (["_id", "organization_id"].includes(s.key)) {
 											return `"${s.key}" ${dir}`;
@@ -126,11 +126,11 @@ function object(method, data) {
 									});
 									sql += ` ORDER BY ${sortClauses.join(', ')}`;
 								}
-								if (data.$filter && typeof data.$filter.limit === 'number') {
-									sql += ` LIMIT ${data.$filter.limit}`;
+								if (data.filter && typeof data.filter.limit === 'number') {
+									sql += ` LIMIT ${data.filter.limit}`;
 								}
-								if (data.$filter && typeof data.$filter.index === 'number') {
-									sql += ` OFFSET ${data.$filter.index}`;
+								if (data.filter && typeof data.filter.index === 'number') {
+									sql += ` OFFSET ${data.filter.index}`;
 								}
 
 								if (data[type][i]._id && !isFilter) {
@@ -154,8 +154,8 @@ function object(method, data) {
 								if (isFilter) {
 									for (let row of result.rows) {
 										const parsedRow = parseSqlRow(row);
-										if (data.$filter && data.$filter.search) {
-											let isMatch = searchData(parsedRow, data.$filter.search);
+										if (data.filter && data.filter.search) {
+											let isMatch = searchData(parsedRow, data.filter.search);
 											if (!isMatch) continue;
 										}
 										documents.push({
@@ -192,7 +192,7 @@ function object(method, data) {
 							else if (method === "update") {
 								const updatePayload = { ...data[type][i] };
 								delete updatePayload._id;
-								delete updatePayload.$filter;
+								delete updatePayload.filter;
 
 								if (data[type][i]._id) {
 									const updatedDoc = await executeUpdateTransaction(pool, array, data[type][i]._id, updatePayload, data);
