@@ -28,10 +28,10 @@ import {
 const organizations = {};
 
 /**
- * Manages dynamically cached connection pools based on data.storageConfig.url and data.organization_id.
+ * Manages connection pools using the storage API's connection URI or the bootstrap URL.
  */
 async function dbClient(data) {
-	const storageUrl = data.storageConfig?.url
+	const storageUrl = data.storageConfig?.connectionUri || data.storageConfig?.url;
 
 	if (storageUrl) {
 		if (!organizations[data.organization_id]) {
