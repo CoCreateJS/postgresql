@@ -515,7 +515,7 @@ function array(method, data) {
 										organization_id VARCHAR(50),
 										data JSONB DEFAULT '{}'::jsonb,
 										created JSONB,
-										modified JSONB
+										updated JSONB
 									);
 								`;
                 process.emit("usage", {
@@ -743,7 +743,7 @@ function object(method, data) {
                 delete recordPayload._id;
                 delete recordPayload.organization_id;
                 const sql = `
-									INSERT INTO "${array}" (_id, organization_id, data, created, modified)
+									INSERT INTO "${array}" (_id, organization_id, data, created, updated)
 									VALUES ($1, $2, $3, $4, NULL)
 									RETURNING *;
 								`;
@@ -810,9 +810,9 @@ function object(method, data) {
                   }
                 } else if (result.rows.length > 0) {
                   let dbRecord = parseSqlRow(result.rows[0]);
-                  if ($storage.length && data[type][i].modified && data[type][i].modified.on) {
-                    let clientTime = new Date(data[type][i].modified.on);
-                    let dbTime = new Date(dbRecord.modified ? dbRecord.modified.on : 0);
+                  if ($storage.length && data[type][i].updated && data[type][i].updated.on) {
+                    let clientTime = new Date(data[type][i].updated.on);
+                    let dbTime = new Date(dbRecord.updated ? dbRecord.updated.on : 0);
                     if (clientTime > dbTime) {
                       const updatedRecord = { ...dbRecord, ...data[type][i] };
                       const savedRecord = await executeUpdateTransaction(pool, array, data[type][i]._id, updatedRecord, data);
@@ -989,7 +989,7 @@ async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, 
         return null;
       }
     }
-    const modified = {
+    const updated = {
       on: new Date(requestData.timeStamp),
       by: requestData.user_id || requestData.clientId
     };
@@ -998,15 +998,15 @@ async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, 
     delete savePayload._id;
     delete savePayload.organization_id;
     delete savePayload.created;
-    delete savePayload.modified;
+    delete savePayload.updated;
     const updateSql = `
 			UPDATE "${arrayName}"
 			SET data = $1::jsonb,
-			    modified = $2::jsonb
+			    updated = $2::jsonb
 			WHERE _id = $3 AND organization_id = $4
 			RETURNING *;
 		`;
-    const updateParams = [JSON.stringify(savePayload), JSON.stringify(modified), docId, requestData.organization_id];
+    const updateParams = [JSON.stringify(savePayload), JSON.stringify(updated), docId, requestData.organization_id];
     process.emit("usage", {
       type: "egress",
       data: { sql: updateSql, updateParams },
@@ -1165,7 +1165,7 @@ function parseSqlRow(row) {
     _id: row._id,
     organization_id: row.organization_id,
     created: typeof row.created === "string" ? JSON.parse(row.created) : row.created,
-    modified: typeof row.modified === "string" ? JSON.parse(row.modified) : row.modified,
+    updated: typeof row.updated === "string" ? JSON.parse(row.updated) : row.updated,
     ...recordData
   };
 }

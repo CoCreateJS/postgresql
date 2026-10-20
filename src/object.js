@@ -89,7 +89,7 @@ function object(method, data) {
 								delete recordPayload.organization_id;
 
 								const sql = `
-									INSERT INTO "${array}" (_id, organization_id, data, created, modified)
+									INSERT INTO "${array}" (_id, organization_id, data, created, updated)
 									VALUES ($1, $2, $3, $4, NULL)
 									RETURNING *;
 								`;
@@ -166,9 +166,9 @@ function object(method, data) {
 								} else if (result.rows.length > 0) {
 									let dbRecord = parseSqlRow(result.rows[0]);
 									
-									if ($storage.length && data[type][i].modified && data[type][i].modified.on) {
-										let clientTime = new Date(data[type][i].modified.on);
-										let dbTime = new Date(dbRecord.modified ? dbRecord.modified.on : 0);
+									if ($storage.length && data[type][i].updated && data[type][i].updated.on) {
+										let clientTime = new Date(data[type][i].updated.on);
+										let dbTime = new Date(dbRecord.updated ? dbRecord.updated.on : 0);
 										
 										if (clientTime > dbTime) {
 											const updatedRecord = { ...dbRecord, ...data[type][i] };

@@ -91,7 +91,7 @@ function array(method, data) {
 										organization_id VARCHAR(50),
 										data JSONB DEFAULT '{}'::jsonb,
 										created JSONB,
-										modified JSONB
+										updated JSONB
 									);
 								`;
 								
