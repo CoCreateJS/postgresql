@@ -41,8 +41,7 @@
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./dist": "./dist/postgresql.js",
-    "./installer": "./installer/postgresql.installer.js"
+    "./dist": "./dist/postgresql.js"
   },
   "devDependencies": {
     "@cocreate/webpack": "^1.9.0"
