@@ -75,6 +75,7 @@ function object(method, data) {
 							if (method === "create") {
 								data[type][i] = replaceArray(data[type][i]);
 								data[type][i] = dotNotationToObject(data[type][i]);
+								delete data[type][i].modified;
 								
 								const id = data[type][i]._id || `row_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 								const orgId = data.organization_id;
@@ -86,13 +87,16 @@ function object(method, data) {
 								const recordPayload = { ...data[type][i] };
 								delete recordPayload._id;
 								delete recordPayload.organization_id;
+								delete recordPayload.created;
+								delete recordPayload.updated;
+								delete recordPayload.modified;
 
 								const sql = `
 									INSERT INTO "${array}" (_id, organization_id, data, created, updated)
-									VALUES ($1, $2, $3, $4, NULL)
+									VALUES ($1, $2, $3, $4, $5)
 									RETURNING *;
 								`;
-								const queryParams = [id, orgId, JSON.stringify(recordPayload), JSON.stringify(created)];
+								const queryParams = [id, orgId, JSON.stringify(recordPayload), JSON.stringify(created), JSON.stringify(created)];
 								
 								process.emit("usage", {
 									type: "egress",
