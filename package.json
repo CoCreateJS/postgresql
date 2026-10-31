@@ -30,9 +30,9 @@
   "author": "CoCreate LLC",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/CoCreate-app/CoCreate-postgresql/issues"
+    "url": "https://github.com/CoCreateJS/CoCreate-postgresql/issues"
   },
-  "homepage": "https://cocreate.app/docs/postgresql",
+  "homepage": "https://CoCreateJS.com/docs/postgresql",
   "funding": {
     "type": "GitHub Sponsors ❤",
     "url": "https://github.com/sponsors/CoCreate-app"
