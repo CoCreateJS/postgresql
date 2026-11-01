@@ -23,6 +23,8 @@ import object from "./object.js";
  * Routes CRUD requests to appropriate PostgreSQL database, array, or object modules.
  * @param {Object} data - CRUD request payload containing method, database, array, organization_id, etc.
  * @returns {Promise<Object>} Execution result from PostgreSQL database layer
+ * @public
+ * @environment server
  */
 export async function send(data) {
     if (!data || !data.method) {
@@ -38,3 +40,10 @@ export async function send(data) {
 }
 
 export default { send };
+
+/**
+ * Lightweight PostgreSQL CRUD wrapper and multi-tenant state routing client for the CoCreate ecosystem.
+ *
+ * @module postgresql
+ * @environment server
+ */

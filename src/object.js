@@ -13,6 +13,8 @@ import {
 
 /**
  * "object" operations mapped to SQL Rows.
+ * @private
+ * @environment server
  */
 function object(method, data) {
 	return new Promise(

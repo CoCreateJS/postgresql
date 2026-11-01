@@ -13,6 +13,8 @@ import {
 
 /**
  * "database" operations mapped to SQL Catalogs.
+ * @private
+ * @environment server
  */
 function database(method, data) {
 	return new Promise(

@@ -29,6 +29,8 @@ const organizations = {};
 
 /**
  * Manages connection pools using the storage API's connection URI or the bootstrap URL.
+ * @private
+ * @environment server
  */
 async function dbClient(data) {
 	const storageUrl = data.storageConfig?.connectionUri || data.storageConfig?.url;
@@ -94,6 +96,8 @@ process.on("orgDeleted", (organization_id) => {
 
 /**
  * Safe transaction block obtaining an isolated row lock, modifying target key pathways, and storing the payload.
+ * @private
+ * @environment server
  */
 async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, requestData) {
 	const client = await pool.connect();
@@ -163,8 +167,10 @@ async function executeUpdateTransaction(pool, arrayName, docId, rawUpdateInput, 
 }
 
 /**
- * Applies MongoDB update operators ($set, $unset, $push, $pull, $addToSet, $inc) 
+ * Applies MongoDB update operators ($set, $unset, $push, $pull, $addToSet, $inc)
  * recursively on a target record to guarantee exact behavioral alignment with MongoDB.
+ * @private
+ * @environment server
  */
 function applyMongoUpdate(record, updatePayload) {
 	let target = { ...record };
@@ -256,6 +262,8 @@ function applyMongoUpdate(record, updatePayload) {
 
 /**
  * Dynamic parser formatting Mongo filter models into SQL statements containing parameter references.
+ * @private
+ * @environment server
  */
 function compileFilterToSQL(filter, organizationId) {
 	let clauses = ["organization_id = $1"];
@@ -326,6 +334,8 @@ function compileFilterToSQL(filter, organizationId) {
 
 /**
  * Parser transforming structured table columns and dynamic JSONB fields back to an aligned NoSQL payload format.
+ * @private
+ * @environment server
  */
 function parseSqlRow(row) {
 	if (!row) return null;
@@ -367,6 +377,8 @@ function deleteNestedValue(obj, path) {
 
 /**
  * Merges response sets safely back into the active payload state structure.
+ * @private
+ * @environment server
  */
 function createData(data, array, type) {
 	if (data[type] && data[type][0] && data[type][0].isFilter === "isEmptyObjectFilter") {

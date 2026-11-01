@@ -13,6 +13,8 @@ import {
 
 /**
  * "array" operations mapped to SQL Tables.
+ * @private
+ * @environment server
  */
 function array(method, data) {
 	return new Promise(
