@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/CoCreateJS/postgresql/compare/v2.0.0...v2.0.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* upgrade CoCreate dependencies to v2 ([04fcdb9](https://github.com/CoCreateJS/postgresql/commit/04fcdb953a9b2ca6e1369688642e2b3ddaa58242))
+
 # [2.0.0](https://github.com/CoCreateJS/postgresql/compare/v1.2.1...v2.0.0) (2026-11-02)
 
 
